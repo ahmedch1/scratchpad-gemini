@@ -1,16 +1,31 @@
 const { GoogleGenerativeAI } =require('@google/generative-ai')
 require('dotenv').config()
 
+const fs=require('fs');
 
 const genAI = new GoogleGenerativeAI(process.env.API_KEY)
 
 
 
-async function run(){
-    const model = genAI.getGenerativeModel({model: "gemini-pro"})
-    const prompt="Write about a story about magic packback";
+function fileToGenerativePart(path,mimeType){
+    return {
+        inlineData: {
+            data: Buffer.from(fs.readFileSync(path)).toString('base64'), mimeType
+        }
+    };
+}
 
-    const result = await model.generateContent(prompt)
+
+async function run(){
+    const model = genAI.getGenerativeModel({model: "gemini-pro-vision"})
+
+    const prompt="What is different between these pictures";
+
+    const imageParts=[
+        fileToGenerativePart("panda.jpg","image/jpeg"),
+        fileToGenerativePart("flower.jpeg","image/jpeg")
+    ]
+    const result = await model.generateContent([prompt,...imageParts])
     const response =await  result.response
     const text=response.text()
 
